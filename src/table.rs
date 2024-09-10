@@ -34,14 +34,15 @@ impl Table {
                 let item_size_b: [u8; 4] = window[16..20].try_into().unwrap();
                 let item_size = u32::from_le_bytes(item_size_b);
 
-                Self {
+                Ok(Self {
                     size_of_item: item_size,
                     start,
                     size,
                     schema: Schema::default(),
-                }
+                })
             })
-            .collect::<Vec<Table>>()
+            .collect::<Result<Vec<Table>, ()>>().unwrap()
+            // TODO ACTUALLY HANDLE ERRORS
     }
 }
 
