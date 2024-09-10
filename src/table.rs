@@ -13,7 +13,7 @@ impl Table {
 
         let start_b = self.start.to_le_bytes();
         let size_b = self.size.to_le_bytes();
-        let item_size_b = self.size_of_item.to_be_bytes();
+        let item_size_b = self.size_of_item.to_le_bytes();
 
         data.extend(start_b);
         data.extend(size_b);
@@ -23,14 +23,25 @@ impl Table {
     }
 
     pub(crate) fn from_header_info(data: Vec<u8>) -> Vec<Self> {
-        let mut tabels = Vec::new();
+        data.chunks(20)
+            .map(|window| {
+                let start_b: [u8; 8] = window[0..8].try_into().unwrap();
+                let start = usize::from_le_bytes(start_b);
+    
+                let size_b: [u8; 8] = window[8..16].try_into().unwrap();
+                let size = u64::from_le_bytes(size_b);
+    
+                let item_size_b: [u8; 4] = window[16..20].try_into().unwrap();
+                let item_size = u32::from_le_bytes(item_size_b);
 
-        let mut idx = 0;
-        while idx < data.len() {
-            idx += 1;
-        }
-
-        tabels
+                Self {
+                    size_of_item: item_size,
+                    start,
+                    size,
+                    schema: Schema::default(),
+                }
+            })
+            .collect::<Vec<Table>>()
     }
 }
 
@@ -42,4 +53,14 @@ pub struct Field {
 pub struct Schema {
     fields: Vec<Field>,
     name: String,
+}
+
+// really bad default will remove later
+impl Default for Schema {
+    fn default() -> Self {
+        Self {
+            fields: Vec::new(),
+            name: String::new(),
+        }
+    }
 }

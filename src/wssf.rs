@@ -34,14 +34,14 @@ impl Drop for WssfReader {
 
 struct WssfHeader {
     header_size: u32,
-    tabels: Vec<Table>,
+    tables: Vec<Table>,
 }
 
 impl WssfHeader {
     fn write_header(&self, file: &mut File) -> Result<(), Error> {
         let size_bytes = self.header_size.to_le_bytes();
         let table_bytes = self
-            .tabels
+            .tables
             .iter()
             .map(|t| t.extract_for_header())
             .flatten()
@@ -61,8 +61,11 @@ impl WssfHeader {
         let size = u32::from_le_bytes(size_buf);
         let mut tabels_buf = Vec::with_capacity(size as usize);
         file.read(&mut tabels_buf)?;
-        let tabels = Table::from_header_info(tabels_buf);
+        let tables = Table::from_header_info(tabels_buf);
 
-        todo!()
+        Ok(Self {
+            header_size: size,
+            tables,
+        })
     }
 }
