@@ -1,5 +1,6 @@
 
 // probs need to point to schema or serialize schema somehow,,,,
+#[derive(Debug, PartialEq, Eq)]
 pub struct Table {
     size_of_item: u32,
     start: usize,
@@ -8,6 +9,15 @@ pub struct Table {
 }
 
 impl Table {
+    pub(crate) fn new(size_of_item: u32, start: usize, size: u64) -> Self {
+        Self {
+            size_of_item,
+            start,
+            size,
+            schema: Schema::default(),
+        }
+    }
+
     pub(crate) fn extract_for_header(&self) -> Vec<u8> {
         let mut data = Vec::new();
 
@@ -46,11 +56,13 @@ impl Table {
     }
 }
 
+#[derive(Debug, PartialEq, Eq)]
 pub struct Field {
     size: u64,
     name: String,
 }
 
+#[derive(Debug, PartialEq, Eq)]
 pub struct Schema {
     fields: Vec<Field>,
     name: String,
